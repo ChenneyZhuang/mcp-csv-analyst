@@ -1,6 +1,5 @@
 """MCP server for CSV data analysis with AI-powered insights."""
 
-import json
 import os
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP

@@ -121,12 +121,10 @@ Compute comprehensive statistics for every column in a CSV file.
   "file": "/Users/you/data/sales.csv",
   "rows": 15000,
   "columns": 8,
-  "column_stats": [
+  "numeric_stats": [
     {
-      "name": "revenue",
-      "dtype": "float64",
-      "missing": 23,
-      "missing_pct": 0.15,
+      "column": "revenue",
+      "count": 14977,
       "mean": 45230.5,
       "median": 38100.0,
       "std": 12450.3,
@@ -134,6 +132,25 @@ Compute comprehensive statistics for every column in a CSV file.
       "max": 98500.0,
       "skewness": 1.23,
       "kurtosis": 2.89
+    }
+  ],
+  "categorical_stats": [
+    {
+      "column": "region",
+      "unique_count": 5,
+      "top_value": "North",
+      "top_freq": 4521,
+      "top_pct": 30.1
+    }
+  ],
+  "column_info": [
+    {
+      "name": "revenue",
+      "dtype": "float64",
+      "inferred_type": "numeric",
+      "null_count": 23,
+      "null_pct": 0.15,
+      "unique_count": 14850
     }
   ],
   "correlations": {
@@ -158,10 +175,10 @@ Generate publication-quality charts from CSV data.
 {
   "file": "/Users/you/data/sales.csv",
   "charts": [
-    "/Users/you/charts/revenue_histogram.png",
-    "/Users/you/charts/revenue_boxplot.png",
-    "/Users/you/charts/correlation_heatmap.png",
-    "/Users/you/charts/category_bar.png"
+    {"title": "Histogram: revenue", "path": "/Users/you/charts/hist_revenue.png", "description": "Distribution of revenue"},
+    {"title": "Box Plot: revenue", "path": "/Users/you/charts/box_revenue.png", "description": "Outlier detection for revenue"},
+    {"title": "Correlation Heatmap", "path": "/Users/you/charts/correlation_heatmap.png", "description": "Numeric column correlations"},
+    {"title": "Bar Chart: region", "path": "/Users/you/charts/bar_region.png", "description": "Top categories for region"}
   ],
   "output_dir": "/Users/you/charts"
 }
@@ -183,19 +200,32 @@ Full pipeline — stats, charts, and AI insights in one call.
   "file": "/Users/you/data/sales.csv",
   "rows": 15000,
   "columns": 8,
-  "highlights": [
-    "Revenue is right-skewed (skewness: 1.23) — median is a better average than mean",
-    "23 missing values in revenue (0.15%) — safe to drop or impute",
-    "Strong correlation between revenue and customers (0.87)"
+  "numeric_columns": 4,
+  "categorical_columns": 4,
+  "anomalies": [
+    {
+      "column": "revenue",
+      "value": "98500.0",
+      "reason": "Value is 3.5 standard deviations above the mean",
+      "severity": "warning"
+    }
   ],
-  "insights": "Revenue shows a clear upward trend in Q4, driven by...",
-  "charts": ["/Users/you/charts/revenue_histogram.png", ...],
-  "ai_analysis_available": true
+  "charts": [
+    {"title": "Histogram: revenue", "path": "/Users/you/charts/hist_revenue.png"}
+  ],
+  "ai_analysis_available": true,
+  "insights": {
+    "summary": "Revenue shows a clear upward trend in Q4...",
+    "key_insights": ["Revenue is right-skewed", "Strong correlation with customers (0.87)"],
+    "correlations_noted": ["revenue ↔ customers: 0.87"],
+    "data_quality_notes": ["23 missing values in revenue (0.15%)"],
+    "recommendations": ["Consider imputing missing revenue values"]
+  }
 }
 ```
 
-Without `DEEPSEEK_API_KEY`, `highlights` contains statistical observations only
-and `insights` returns an empty string. Charts are always generated.
+Without `DEEPSEEK_API_KEY`, the `insights` field is omitted. Statistics, charts,
+and anomaly detection always work offline.
 
 ---
 
