@@ -5,45 +5,25 @@
 [![CI](https://github.com/ChenneyZhuang/mcp-csv-analyst/actions/workflows/ci.yml/badge.svg)](https://github.com/ChenneyZhuang/mcp-csv-analyst/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/ChenneyZhuang/mcp-csv-analyst)](https://github.com/ChenneyZhuang/mcp-csv-analyst/releases)
 
-**MCP server for CSV data analysis — stats, charts, and AI-powered insights.**
-Drop a CSV file and your AI agent becomes a data analyst: statistical summaries,
-correlation matrices, visualizations, and LLM-generated narrative insights.
+**Drop a CSV file. Your AI agent becomes a data analyst.**
 
----
-
-## Table of Contents
-
-- [Why This One?](#why-this-one)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Tools](#tools)
-  - [csv_stats](#csv_stats)
-  - [csv_charts](#csv_charts)
-  - [csv_analyze](#csv_analyze)
-- [Usage Examples](#usage-examples)
-- [How It Works](#how-it-works)
-- [AI Analysis (Optional)](#ai-analysis-optional)
-- [FAQ](#faq)
-- [Related](#related)
-- [License](#license)
+Automatic descriptive statistics, correlation matrices, 8 chart types, anomaly detection, and optional AI-powered narrative insights — no pandas knowledge required. The agent calls a tool, the server does the math.
 
 ---
 
 ## Why This One?
 
-Most CSV MCP servers require you to **write pandas code manually**.
-This server **computes everything automatically** — and optionally
-adds AI-generated insights.
+Most CSV MCP servers make you **write pandas code manually** through the agent. This server computes everything automatically — and optionally adds LLM-generated insights on top.
 
 | | This Server | `pandas-mcp-server` | `csv-mcp-server` |
-|---|---|:---:|:---:|
+|---|:---:|:---:|:---:|
 | Automatic statistics | ✅ | ❌ (manual code) | ❌ |
 | AI-powered insights | ✅ built-in | ❌ | ❌ |
 | Correlation matrix | ✅ | ❌ | ❌ |
-| Charts (PNG) | ✅ histogram, box, heatmap, bar | ✅ (HTML/JS) | ❌ |
+| Charts (PNG) | ✅ 8 types | ✅ (HTML/JS) | ❌ |
 | Skewness / kurtosis | ✅ | ❌ | ❌ |
-| Missing value analysis | ✅ | ❌ | ❌ |
-| Requires pandas knowledge | ❌ no | ✅ yes | ✅ yes |
+| Anomaly detection | ✅ | ❌ | ❌ |
+| Requires pandas knowledge | ❌ | ✅ | ✅ |
 
 ---
 
@@ -54,20 +34,25 @@ pip install git+https://github.com/ChenneyZhuang/mcp-csv-analyst.git
 ```
 
 For AI-powered insights (optional):
+
 ```bash
 export DEEPSEEK_API_KEY="your-key-here"
 ```
 
-Works with any OpenAI-compatible endpoint — set `DEEPSEEK_BASE_URL` to use
-a different provider.
+Works with any OpenAI-compatible endpoint — set `DEEPSEEK_BASE_URL` to switch providers. Without an API key, all tools work in offline mode (stats + charts only).
+
+### Docker
+
+```bash
+docker build -t mcp-csv-analyst github.com/ChenneyZhuang/mcp-csv-analyst
+docker run -i -e DEEPSEEK_API_KEY=sk-... mcp-csv-analyst
+```
 
 ---
 
 ## Configuration
 
 ### Claude Desktop
-
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
@@ -110,15 +95,13 @@ Set `DEEPSEEK_API_KEY` in your shell environment before launching.
 
 ### `csv_stats`
 
-Compute comprehensive statistics for every column in a CSV file.
+Compute comprehensive statistics for every column.
 
-**Parameters:**
-- `file_path` (str) — path to the CSV file
+**Parameter:** `file_path` (str) — path to CSV
 
-**Returns:**
 ```json
 {
-  "file": "/Users/you/data/sales.csv",
+  "file": "/data/sales.csv",
   "rows": 15000,
   "columns": 8,
   "numeric_stats": [
@@ -149,8 +132,7 @@ Compute comprehensive statistics for every column in a CSV file.
       "dtype": "float64",
       "inferred_type": "numeric",
       "null_count": 23,
-      "null_pct": 0.15,
-      "unique_count": 14850
+      "null_pct": 0.15
     }
   ],
   "correlations": {
@@ -159,45 +141,39 @@ Compute comprehensive statistics for every column in a CSV file.
 }
 ```
 
-Handles numeric, categorical, and datetime columns. Missing values are flagged
-with counts and percentages.
-
 ### `csv_charts`
 
-Generate publication-quality charts from CSV data.
+Generate charts from CSV data.
 
-**Parameters:**
-- `file_path` (str) — path to the CSV file
-- `output_dir` (str, default `"./charts"`) — where to save PNG files
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `file_path` | `str` | *(required)* | Path to CSV |
+| `output_dir` | `str` | `"./charts"` | Where to save PNGs |
 
-**Returns:**
 ```json
 {
-  "file": "/Users/you/data/sales.csv",
+  "file": "/data/sales.csv",
   "charts": [
-    {"title": "Histogram: revenue", "path": "/Users/you/charts/hist_revenue.png", "description": "Distribution of revenue"},
-    {"title": "Box Plot: revenue", "path": "/Users/you/charts/box_revenue.png", "description": "Outlier detection for revenue"},
-    {"title": "Correlation Heatmap", "path": "/Users/you/charts/correlation_heatmap.png", "description": "Numeric column correlations"},
-    {"title": "Bar Chart: region", "path": "/Users/you/charts/bar_region.png", "description": "Top categories for region"}
+    {"title": "Histogram: revenue", "path": "/charts/hist_revenue.png", "description": "Distribution of revenue"},
+    {"title": "Box Plot: revenue", "path": "/charts/box_revenue.png", "description": "Outlier detection for revenue"},
+    {"title": "Correlation Heatmap", "path": "/charts/correlation_heatmap.png", "description": "Numeric column correlations"},
+    {"title": "Bar Chart: region", "path": "/charts/bar_region.png", "description": "Top categories for region"}
   ],
-  "output_dir": "/Users/you/charts"
+  "output_dir": "/charts"
 }
 ```
 
-Chart types: histogram (distribution), box plot (outliers), heatmap (correlations),
-and bar chart (categorical breakdown). All rendered as 150 DPI PNGs.
+8 chart types: histogram, box plot, correlation heatmap, bar chart, missing values visualization, and more. All rendered as 150 DPI PNGs.
 
 ### `csv_analyze`
 
-Full pipeline — stats, charts, and AI insights in one call.
+Full pipeline — stats + charts + anomaly detection + AI insights in one call.
 
-**Parameters:**
-- `file_path` (str) — path to the CSV file
+**Parameter:** `file_path` (str) — path to CSV
 
-**Returns:**
 ```json
 {
-  "file": "/Users/you/data/sales.csv",
+  "file": "/data/sales.csv",
   "rows": 15000,
   "columns": 8,
   "numeric_columns": 4,
@@ -211,7 +187,7 @@ Full pipeline — stats, charts, and AI insights in one call.
     }
   ],
   "charts": [
-    {"title": "Histogram: revenue", "path": "/Users/you/charts/hist_revenue.png"}
+    {"title": "Histogram: revenue", "path": "/charts/hist_revenue.png"}
   ],
   "ai_analysis_available": true,
   "insights": {
@@ -224,8 +200,7 @@ Full pipeline — stats, charts, and AI insights in one call.
 }
 ```
 
-Without `DEEPSEEK_API_KEY`, the `insights` field is omitted. Statistics, charts,
-and anomaly detection always work offline.
+Without `DEEPSEEK_API_KEY`, the `insights` field is omitted — statistics, charts, and anomaly detection always work offline.
 
 ---
 
@@ -236,9 +211,9 @@ and anomaly detection always work offline.
 ```
 User: "What's in this sales.csv?"
 Agent: calls csv_stats("/path/to/sales.csv")
-       → returns 8 columns, 15000 rows, revenue right-skewed
-Agent: "Your sales data has 8 columns and 15000 rows. Revenue is
-       right-skewed — consider using median for averages."
+       → returns 8 columns, 15K rows, revenue right-skewed
+Agent: "Your sales data has 8 columns and 15,000 rows.
+       Revenue is right-skewed — consider using median for averages."
 ```
 
 ### Deep analysis with charts
@@ -246,10 +221,10 @@ Agent: "Your sales data has 8 columns and 15000 rows. Revenue is
 ```
 User: "Analyze sales.csv and show me the patterns."
 Agent: calls csv_analyze("/path/to/sales.csv")
-       → stats + charts + AI narrative
-Agent: "Revenue peaks in Q4 (Dec avg: $52K vs Jul avg: $31K).
-       Customer count and revenue are strongly correlated (0.87).
-       I've generated charts showing the seasonal pattern."
+       → stats + 8 charts + AI narrative
+Agent: "Revenue peaks in Q4. Customer count and revenue are
+       strongly correlated (0.87). Charts generated showing
+       the seasonal pattern."
 ```
 
 ---
@@ -271,53 +246,40 @@ Agent: "Revenue peaks in Q4 (Dec avg: $52K vs Jul avg: $31K).
                     └──────────┘       └──────────┘       └──────────┘
 ```
 
-1. **Stats engine** (`pandas` + `scipy`): computes descriptive statistics,
-   skewness, kurtosis, and Pearson correlation matrix for numeric columns.
-2. **Chart engine** (`matplotlib`): generates histogram, box plot, heatmap,
-   and bar charts as 150 DPI PNGs.
-3. **AI interpreter** (`DeepSeek` / OpenAI-compatible, optional): takes the
-   statistical output and produces human-readable narrative insights.
+Three engines, one server:
+
+1. **Stats** (`pandas` + `scipy`): descriptive statistics, skewness, kurtosis, Pearson correlation
+2. **Charts** (`matplotlib`): histogram, box plot, heatmap, bar charts at 150 DPI
+3. **AI** (DeepSeek / OpenAI-compatible, optional): receives aggregated statistics only — never raw data — and produces narrative insights
 
 ---
 
 ## AI Analysis (Optional)
 
-Set `DEEPSEEK_API_KEY` to enable AI-powered insights via `csv_analyze`.
-The LLM receives structured statistics (not raw data) and generates
-narrative observations, trend analysis, and actionable recommendations.
+Set `DEEPSEEK_API_KEY` to enable LLM-powered insights via `csv_analyze`. The LLM receives structured statistics (means, correlations, anomalies) — never raw rows.
 
-**Environment variables:**
-- `DEEPSEEK_API_KEY` — your API key (required for AI analysis)
-- `DEEPSEEK_BASE_URL` — override for OpenAI-compatible proxies (default: `https://api.deepseek.com/v1`)
-- `DEEPSEEK_MODEL` — model name (default: `deepseek-chat`)
-- `DEEPSEEK_MAX_TOKENS` — max response tokens (default: `4096`)
-
-Without an API key, all tools work in **offline mode** — statistics and charts
-only, no AI narrative.
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DEEPSEEK_API_KEY` | *(required for AI)* | Your API key |
+| `DEEPSEEK_BASE_URL` | `https://api.deepseek.com/v1` | Override for any OpenAI-compatible endpoint |
+| `DEEPSEEK_MODEL` | `deepseek-chat` | Model name |
+| `DEEPSEEK_MAX_TOKENS` | `4096` | Max response tokens |
 
 ---
 
 ## FAQ
 
 **How large a CSV can it handle?**
-Tested up to 100K rows × 20 columns. For larger files, consider sampling
-or using a dedicated data pipeline.
-
-**What CSV formats are supported?**
-Standard comma-separated CSV with headers. The parser auto-detects delimiters
-and encodings for most common formats.
+Tested up to 100K rows × 20 columns. For larger files, consider sampling.
 
 **Does it modify my data?**
-No. All tools are read-only. Your CSV files are never modified.
+No. All tools are read-only. Your CSV files are never touched.
 
-**Is my data sent to DeepSeek?**
-Only if you set `DEEPSEEK_API_KEY` AND call `csv_analyze`. Even then, only
-**aggregated statistics** (means, correlations, etc.) are sent — never raw rows.
-`csv_stats` and `csv_charts` never make network calls.
+**Is my data sent to external APIs?**
+Only if you set `DEEPSEEK_API_KEY` and call `csv_analyze`. Even then, only aggregated statistics are sent — never raw rows. `csv_stats` and `csv_charts` are fully offline.
 
 **Can I use OpenAI instead of DeepSeek?**
-Yes. Set `DEEPSEEK_BASE_URL=https://api.openai.com/v1` and
-`DEEPSEEK_MODEL=gpt-4o`. Any OpenAI-compatible endpoint works.
+Yes. Set `DEEPSEEK_BASE_URL=https://api.openai.com/v1` and `DEEPSEEK_MODEL=gpt-4o`. Any OpenAI-compatible endpoint works.
 
 ---
 
