@@ -20,7 +20,7 @@ classifiers = [
 
 dependencies = [
     "mcp>=1.2",
-    "csv-analyst-agent @ git+https://github.com/ChenneyZhuang/csv-analyst-agent.git",
+    "csv-analyst @ git+https://github.com/ChenneyZhuang/csv-analyst-agent.git",
 ]
 
 [project.scripts]
